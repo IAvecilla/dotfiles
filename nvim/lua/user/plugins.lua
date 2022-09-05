@@ -56,7 +56,11 @@ return packer.startup(function(use)
 
     use ({"nvim-treesitter/nvim-treesitter", run = ":TSUpdate"})
     use ("jose-elias-alvarez/null-ls.nvim")
-    use ({"catppuccin/nvim", as = "catpuccin"}) 
+    
+    -- colorschemes
+    use "savq/melange"
+    use ('projekt0n/github-nvim-theme')
+
     use "neovim/nvim-lspconfig"
     use {'iamcco/markdown-preview.nvim',run = function() vim.fn['mkdp#util#install']() end, ft = {'markdown'}}
     
