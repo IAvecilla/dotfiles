@@ -53,23 +53,49 @@ return packer.startup(function(use)
     use "wbthomason/packer.nvim" -- Have packer manage itself
     use "nvim-lua/popup.nvim" -- An implementation of the Popup API from vim in Neovim
     use "nvim-lua/plenary.nvim" -- Useful lua functions used ny lots of plugins
-
-    use ({"nvim-treesitter/nvim-treesitter", run = ":TSUpdate"})
+    
+    use "alaviss/nim.nvim"
+    use 'voldikss/vim-floaterm'
+    use "nvim-treesitter/nvim-treesitter"
     use ("jose-elias-alvarez/null-ls.nvim")
     
+    -- Tree (file explorer)
+    use {"nvim-tree/nvim-tree.lua", requires = { "nvim-tree/nvim-web-devicons"}}
+
     -- colorschemes
     use "savq/melange"
+    use ({"catppuccin/nvim", as = "catpuccin"}) 
+   
+    -- Install without configuration
     use ('projekt0n/github-nvim-theme')
 
+    use {
+     'nvim-telescope/telescope.nvim', tag = '0.1.1',
+        requires = { {'nvim-lua/plenary.nvim'} }
+    }
+
+    use "williamboman/mason.nvim"
+    use "williamboman/mason-lspconfig.nvim"
     use "neovim/nvim-lspconfig"
+    
+    use "simrat39/rust-tools.nvim"
     use {'iamcco/markdown-preview.nvim',run = function() vim.fn['mkdp#util#install']() end, ft = {'markdown'}}
     
-    -- cmp plugins
-    use "saadparwaiz1/cmp_luasnip"
+    -- LSP completion source
     use "hrsh7th/cmp-nvim-lsp"
-    use "hrsh7th/cmp-buffer"
-    use "hrsh7th/cmp-path"
+
+    use 'rescript-lang/vim-rescript'
+
+    -- Completion framework
     use "hrsh7th/nvim-cmp"
+    
+    -- Useful completion sources:
+    use 'hrsh7th/cmp-nvim-lua'
+    use 'hrsh7th/cmp-nvim-lsp-signature-help'
+    use 'hrsh7th/cmp-vsnip'                             
+    use 'hrsh7th/cmp-path'                              
+    use 'hrsh7th/cmp-buffer'                            
+    use 'hrsh7th/vim-vsnip'
 
     -- Automatically set up your configuration after cloning packer.nvim
     -- Put this at the end after all plugins
