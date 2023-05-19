@@ -21,8 +21,10 @@ require('nvim-treesitter.configs').setup {
   }
 }
 
-require("null-ls").setup({ sources = { require("null-ls").builtins.diagnostics.vale,},})
 require("nvim-tree").setup {}
+
+-- Autoclosing
+require("nvim-autopairs").setup {} 
 
 -- Mason Setup
 require ("mason").setup({

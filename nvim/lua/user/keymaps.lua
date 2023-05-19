@@ -19,7 +19,7 @@ keymap("n", "<C-l>", "<C-w>l", opts)
 
 -- FloatTerm
 keymap("n", "<leader>ft", ":FloatermNew --name=myfloat --height=0.8 --width=0.7 --autoclose=2 zsh <CR>", opts)
-keymap("n", "t", ":FloatermToggle myfloat<CR>", opts)
+keymap("n", "<leader>t", ":FloatermToggle myfloat<CR>", opts)
 keymap("t", "<Esc>", "<C-\\><C-n>:q<CR>", opts)
 
 -- Navigate Buffers

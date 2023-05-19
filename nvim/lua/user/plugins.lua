@@ -39,56 +39,48 @@ packer.init {
 }
 
 return packer.startup(function(use)
-    use { 
-        "folke/trouble.nvim",
-        requires = "kyazdani42/nvim-web-devicons",
-        config = function()
-            require("trouble").setup {
-            -- your configuration comes here
-            -- or leave it empty to use the default settings
-            -- refer to the configuration section below
-            }
-        end
-    }
     use "wbthomason/packer.nvim" -- Have packer manage itself
     use "nvim-lua/popup.nvim" -- An implementation of the Popup API from vim in Neovim
     use "nvim-lua/plenary.nvim" -- Useful lua functions used ny lots of plugins
     
-    use "alaviss/nim.nvim"
+    -- FloatTerm
     use 'voldikss/vim-floaterm'
+    
+    -- TreeSitter 
     use "nvim-treesitter/nvim-treesitter"
-    use ("jose-elias-alvarez/null-ls.nvim")
     
     -- Tree (file explorer)
     use {"nvim-tree/nvim-tree.lua", requires = { "nvim-tree/nvim-web-devicons"}}
+    
+    -- Auto closing pairs
+    use "windwp/nvim-autopairs"
 
     -- colorschemes
     use "savq/melange"
     use ({"catppuccin/nvim", as = "catpuccin"}) 
-   
-    -- Install without configuration
     use ('projekt0n/github-nvim-theme')
 
+    -- Telescope
     use {
      'nvim-telescope/telescope.nvim', tag = '0.1.1',
         requires = { {'nvim-lua/plenary.nvim'} }
     }
-
+    
+    -- Mason package manager
     use "williamboman/mason.nvim"
     use "williamboman/mason-lspconfig.nvim"
-    use "neovim/nvim-lspconfig"
-    
+   
+    -- Rust config
     use "simrat39/rust-tools.nvim"
+    
+    -- Markdown Preview
     use {'iamcco/markdown-preview.nvim',run = function() vim.fn['mkdp#util#install']() end, ft = {'markdown'}}
     
     -- LSP completion source
     use "hrsh7th/cmp-nvim-lsp"
-
-    use 'rescript-lang/vim-rescript'
-
-    -- Completion framework
     use "hrsh7th/nvim-cmp"
-    
+    use "neovim/nvim-lspconfig"
+   
     -- Useful completion sources:
     use 'hrsh7th/cmp-nvim-lua'
     use 'hrsh7th/cmp-nvim-lsp-signature-help'
@@ -97,8 +89,6 @@ return packer.startup(function(use)
     use 'hrsh7th/cmp-buffer'                            
     use 'hrsh7th/vim-vsnip'
 
-    -- Automatically set up your configuration after cloning packer.nvim
-    -- Put this at the end after all plugins
   if PACKER_BOOTSTRAP then
     require("packer").sync()
   end
