@@ -1,1 +1,0 @@
-/Users/ignacioavecilla/.config/tmux

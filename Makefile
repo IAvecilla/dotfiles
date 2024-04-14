@@ -1,4 +1,6 @@
-nvim:
-	cp -rf ~/.config/nvim nvim
+.PHONE: update
 
-.PHONY: nvim
+update:
+	cp -rf ~/.config/nvim nvim
+	cp -rf ~/.config/tmux tmux
+	cp -rf ~/.zshrc .
