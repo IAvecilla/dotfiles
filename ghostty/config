@@ -1,0 +1,7 @@
+keybind = super+right=next_tab
+keybind = super+left=previous_tab
+font-size = 15
+cursor-style = underline
+theme = flexoki-light
+#background-opacity = 0.3
+
