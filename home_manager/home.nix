@@ -1,4 +1,4 @@
-{ config, pkgs, username, ... }:
+{ config, pkgs, username, paneruPkg, ... }:
 
 {
   # Home Manager needs to know your username and home directory
@@ -17,12 +17,11 @@
   # These become available in your PATH
   home.packages = with pkgs; [
     # Essential tools
-    git
     curl
     wget
 
-    # Neovim and dependencies
-    neovim
+    # Window manager
+    paneruPkg
   ];
 
   # Neovim configuration
@@ -43,18 +42,45 @@
   home.file.".config/nvim".source = config.lib.file.mkOutOfStoreSymlink
     "${config.home.homeDirectory}/misc/dotfiles/nvim";
 
+  # Paneru window manager configuration
+  home.file.".paneru.toml".text = ''
+    [options]
+    preset_column_widths = [0.25, 0.33, 0.50, 0.66, 0.75]
+    animation_speed = 50
+
+    [bindings]
+    # Navigation
+    window_focus_west = "alt - h"
+    window_focus_east = "alt - l"
+    window_focus_north = "alt - k"
+    window_focus_south = "alt - j"
+
+    # Move/swap windows
+    window_swap_west = "alt + shift - h"
+    window_swap_east = "alt + shift - l"
+
+    # Resize and manage
+    window_resize = "alt - r"
+    window_center = "alt - c"
+    window_fullwidth = "alt - f"
+    window_manage = "alt - t"
+
+    # Quit
+    quit = "ctrl + alt - q"
+  '';
+
   # Git configuration
   programs.git = {
     enable = true;
-    userName = "IAvecilla";
-    userEmail = "iavecilla@fi.uba.ar";
-    extraConfig = {
+    settings = {
+      user.name = "IAvecilla";
+      user.email = "iavecilla@fi.uba.ar";
       init.defaultBranch = "main";
       push.autoSetupRemote = true;
     };
   };
 
-  # Zsh configuration (optional but recommended)
+  # Zsh configuration
   programs.zsh = {
     enable = true;
     enableCompletion = true;
@@ -63,8 +89,28 @@
 
     oh-my-zsh = {
       enable = true;
-      theme = "robbyrussell";
+      theme = "";  # Disabled - using oh-my-posh instead
       plugins = [ "git" ];
+    };
+  };
+
+  # Oh My Posh prompt
+  programs.oh-my-posh = {
+    enable = true;
+    enableZshIntegration = true;
+    settings = builtins.fromTOML (builtins.readFile ../ohmyposh/zen.toml);
+  };
+
+  # Paneru launch agent - starts automatically at login
+  launchd.agents.paneru = {
+    enable = true;
+    config = {
+      Label = "com.user.paneru";
+      ProgramArguments = [ "${paneruPkg}/bin/paneru" ];
+      RunAtLoad = true;
+      KeepAlive = true;
+      StandardOutPath = "/tmp/paneru.log";
+      StandardErrorPath = "/tmp/paneru.error.log";
     };
   };
 }
