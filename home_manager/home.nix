@@ -1,6 +1,9 @@
-{ config, pkgs, username, paneruPkg, ... }:
+{ config, pkgs, username, paneru, ... }:
 
 {
+  imports = [
+    paneru.homeModules.paneru
+  ];
   # Home Manager needs to know your username and home directory
   home.username = username;
   home.homeDirectory = "/Users/${username}";
@@ -19,9 +22,6 @@
     # Essential tools
     curl
     wget
-
-    # Window manager
-    paneruPkg
   ];
 
   # Neovim configuration
@@ -43,31 +43,34 @@
     "${config.home.homeDirectory}/misc/dotfiles/nvim";
 
   # Paneru window manager configuration
-  home.file.".paneru.toml".text = ''
-    [options]
-    preset_column_widths = [0.25, 0.33, 0.50, 0.66, 0.75]
-    animation_speed = 50
-
-    [bindings]
-    # Navigation
-    window_focus_west = "alt - h"
-    window_focus_east = "alt - l"
-    window_focus_north = "alt - k"
-    window_focus_south = "alt - j"
-
-    # Move/swap windows
-    window_swap_west = "alt + shift - h"
-    window_swap_east = "alt + shift - l"
-
-    # Resize and manage
-    window_resize = "alt - r"
-    window_center = "alt - c"
-    window_fullwidth = "alt - f"
-    window_manage = "alt - t"
-
-    # Quit
-    quit = "ctrl + alt - q"
-  '';
+  services.paneru = {
+    enable = true;
+    settings = {
+      options = {
+        focus_follows_mouse = false;
+        preset_column_widths = [ 0.25 0.33 0.5 0.66 0.75 ];
+        swipe_gesture_fingers = 4;
+        animation_speed = 4000;
+      };
+      bindings = {
+        window_focus_west = "cmd - h";
+        window_focus_east = "cmd - l";
+        window_focus_north = "cmd - k";
+        window_focus_south = "cmd - j";
+        window_swap_west = "alt - h";
+        window_swap_east = "alt - l";
+        window_swap_first = "alt + shift - h";
+        window_swap_last = "alt + shift - l";
+        window_center = "alt - c";
+        window_resize = "alt - r";
+        window_fullwidth = "alt - f";
+        window_manage = "ctrl + alt - t";
+        window_stack = "alt - ]";
+        window_unstack = "alt + shift - ]";
+        quit = "ctrl + alt - q";
+      };
+    };
+  };
 
   # Git configuration
   programs.git = {
@@ -92,6 +95,24 @@
       theme = "";  # Disabled - using oh-my-posh instead
       plugins = [ "git" ];
     };
+    initExtra = ''
+    export PATH="$HOME/.local/bin:$PATH"
+  '';
+  };
+
+  # Ghostty terminal
+  programs.ghostty = {
+    enable = true;
+    package = null;
+    settings = {
+      font-size = 15;
+      cursor-style = "underline";
+      theme = "flexoki-light";
+      keybind = [
+        "super+right=next_tab"
+        "super+left=previous_tab"
+      ];
+    };
   };
 
   # Oh My Posh prompt
@@ -99,18 +120,4 @@
     enable = true;
     enableZshIntegration = true;
     settings = builtins.fromTOML (builtins.readFile ../ohmyposh/zen.toml);
-  };
-
-  # Paneru launch agent - starts automatically at login
-  launchd.agents.paneru = {
-    enable = true;
-    config = {
-      Label = "com.user.paneru";
-      ProgramArguments = [ "${paneruPkg}/bin/paneru" ];
-      RunAtLoad = true;
-      KeepAlive = true;
-      StandardOutPath = "/tmp/paneru.log";
-      StandardErrorPath = "/tmp/paneru.error.log";
-    };
-  };
-}
+  };}

@@ -57,6 +57,15 @@
   # Enable Touch ID for sudo
   security.pam.services.sudo_local.touchIdAuth = true;
 
+  # Homebrew (for macOS-only apps not in nixpkgs)
+  homebrew = {
+    enable = true;
+    casks = [
+      "ghostty"
+    ];
+    onActivation.cleanup = "zap";
+  };
+
   # Create /etc/zshrc that loads nix-darwin environment
   programs.zsh.enable = true;
 

@@ -35,7 +35,6 @@
         inherit system;
         specialArgs = {
           inherit username;
-          paneruPkg = paneru.packages.${system}.default;
         };
         modules = [
           ./darwin.nix
@@ -44,8 +43,7 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = {
-              inherit username;
-              paneruPkg = paneru.packages.${system}.default;
+              inherit username paneru;
             };
             home-manager.users.${username} = import ./home.nix;
           }
@@ -57,9 +55,8 @@
         pkgs = nixpkgs.legacyPackages.${system};
         modules = [ ./home.nix ];
         extraSpecialArgs = {
-          inherit username;
+          inherit username paneru;
           dotfilesDir = self + "/..";
-          paneruPkg = paneru.packages.${system}.default;
         };
       };
     };
