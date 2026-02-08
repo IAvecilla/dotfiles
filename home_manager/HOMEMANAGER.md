@@ -1,46 +1,52 @@
 # Home Manager Setup
 
-This guide explains how to use Home Manager with Nix on macOS.
-
-## What is Home Manager?
-
-Home Manager is a Nix-powered tool that manages your user environment (dotfiles, packages, and configurations) in a declarative, reproducible way. Instead of manually installing packages and editing config files, you define everything in `.nix` files and Home Manager sets it up for you.
+This guide explains how to use Home Manager with Nix on macOS and Linux (Pop!_OS).
 
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        Your Mac                              │
-├─────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────────┐  │
-│  │   flake.nix │───▶│   home.nix  │───▶│ ~/.config/nvim  │  │
-│  │  (entry)    │    │ (config)    │    │ ~/.gitconfig    │  │
-│  └─────────────┘    └─────────────┘    │ ~/.zshrc        │  │
-│                                        │ Packages...     │  │
-│                                        └─────────────────┘  │
+│                      flake.nix (entry point)                │
+├────────────────────────────┬────────────────────────────────┤
+│         macOS              │           Linux                │
+│  ┌──────────────────┐      │   ┌──────────────────┐         │
+│  │   darwin.nix      │      │   │   linux.nix       │         │
+│  │  (system config)  │      │   │  (niri + wayland) │         │
+│  └──────────────────┘      │   └──────────────────┘         │
+│           │                │            │                   │
+│           ▼                │            ▼                   │
+│  ┌──────────────────────────────────────────────────┐       │
+│  │              home.nix (shared config)             │       │
+│  │   neovim, git, zsh, ghostty, oh-my-posh           │       │
+│  └──────────────────────────────────────────────────┘       │
 └─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-                    ┌─────────────────┐
-                    │   Nix Store     │
-                    │  (/nix/store)   │
-                    └─────────────────┘
 ```
 
 ## Files Explained
 
 ### `flake.nix`
-The entry point. Defines:
-- Input sources (nixpkgs, home-manager)
-- Your system architecture (`aarch64-darwin` for Apple Silicon, `x86_64-darwin` for Intel)
-- Your username
+Entry point. Defines inputs and configurations for both platforms:
+- **darwinConfigurations** — nix-darwin + home-manager for macOS
+- **homeConfigurations.nacho** — standalone home-manager for Linux (Pop!_OS)
+- **homeConfigurations.ignacioavecilla** — standalone home-manager for macOS
 
 ### `home.nix`
-Your actual configuration. Defines:
-- Packages to install
-- Program configurations (neovim, git, zsh, etc.)
+Shared configuration that works on both macOS and Linux:
+- Packages (curl, wget)
+- Programs (neovim, git, zsh, ghostty, oh-my-posh)
 - Dotfile symlinks
-- Environment variables
+- Automatically detects the platform for paths and packages
+
+### `darwin.nix`
+macOS-only system configuration (nix-darwin):
+- Dock, Finder, trackpad settings
+- Homebrew integration
+- Touch ID for sudo
+
+### `linux.nix`
+Linux-only configuration:
+- Niri (scrollable tiling Wayland compositor)
+- Wayland companion tools (fuzzel, mako, swaybg, etc.)
 
 ## Installation
 
@@ -52,7 +58,7 @@ curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix 
 
 Or use the official installer:
 ```bash
-sh <(curl -L https://nixos.org/nix/install)
+sh <(curl -L https://nixos.org/nix/install) --daemon
 ```
 
 Restart your shell after installation.
@@ -64,18 +70,28 @@ mkdir -p ~/.config/nix
 echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
 ```
 
-### 3. Apply Home Manager Configuration
+### 3. Apply Configuration
 
+**On Linux (Pop!_OS):**
 ```bash
-# Navigate to your dotfiles directory
-cd ~/misc/dotfiles
-
-# Build and switch to the configuration
-nix run nixpkgs#home-manager -- switch --flake .#ignacioavecilla
+cd ~/dotfiles/home_manager
+nix run nixpkgs#home-manager -- switch --flake .#nacho
 ```
 
-After first install, you can use:
+After first install:
 ```bash
+home-manager switch --flake ~/dotfiles/home_manager#nacho
+```
+
+**On macOS (with nix-darwin):**
+```bash
+cd ~/misc/dotfiles/home_manager
+darwin-rebuild switch --flake .
+```
+
+**On macOS (standalone home-manager):**
+```bash
+cd ~/misc/dotfiles/home_manager
 home-manager switch --flake .#ignacioavecilla
 ```
 
@@ -84,83 +100,77 @@ home-manager switch --flake .#ignacioavecilla
 ### Edit your configuration
 
 ```bash
-cd ~/misc/dotfiles
-# Edit home.nix or flake.nix
-nvim home.nix
+nvim ~/dotfiles/home_manager/home.nix    # Shared config
+nvim ~/dotfiles/home_manager/linux.nix   # Linux/niri config
+nvim ~/dotfiles/home_manager/darwin.nix  # macOS config
 ```
 
 ### Apply changes
 
+**Linux:**
 ```bash
-cd ~/misc/dotfiles
-home-manager switch --flake .#ignacioavecilla
+home-manager switch --flake ~/dotfiles/home_manager#nacho
 ```
 
-Or use the shorthand:
+**macOS:**
 ```bash
-home-manager switch --flake ~/misc/dotfiles
+darwin-rebuild switch --flake ~/misc/dotfiles/home_manager
 ```
 
 ### Add a new package
 
-Edit `home.nix` and add to `home.packages`:
+Edit `home.nix` for shared packages or `linux.nix`/`darwin.nix` for platform-specific ones:
 
 ```nix
 home.packages = with pkgs; [
   # ... existing packages
   htop
-  zoxide  # smarter cd command
+  zoxide
 ];
 ```
 
-Then apply:
-```bash
-home-manager switch --flake .
-```
+Then apply with the commands above.
 
 ### Search for packages
 
 ```bash
 nix search nixpkgs htop
-nix search nixpkgs nodejs
 ```
+
+Or search on [search.nixos.org](https://search.nixos.org/packages).
 
 ## Useful Commands
 
 | Command | Description |
 |---------|-------------|
-| `home-manager switch --flake .` | Apply configuration changes |
-| `home-manager build --flake .` | Build without applying (test) |
+| `home-manager switch --flake .#nacho` | Apply Linux config |
+| `darwin-rebuild switch --flake .` | Apply macOS config |
+| `home-manager build --flake .#nacho` | Build without applying (test) |
 | `home-manager generations` | List all generations |
 | `home-manager switch --rollback` | Rollback to previous generation |
 | `nix flake update` | Update all inputs to latest versions |
 | `nix store gc` | Garbage collect unused packages |
 
-## How It Works with Your Existing Config
+## Niri (Linux Window Manager)
 
-Your existing `nvim/` directory stays as-is. In `home.nix`:
+Niri is a scrollable tiling Wayland compositor configured in `linux.nix`.
 
-```nix
-home.file.".config/nvim".source = config.lib.file.mkOutOfStoreSymlink
-  "${config.home.homeDirectory}/misc/dotfiles/nvim";
-```
+### Key bindings
 
-This creates a symlink from `~/.config/nvim` to your repo's `nvim/` folder. You can edit your nvim config directly in the repo, and changes are reflected immediately (no need to run `home-manager switch` for nvim edits).
-
-## Adding More Configs
-
-To add your other configs (ghostty, ohmyposh, tmux), add entries like:
-
-```nix
-home.file.".config/ghostty".source = config.lib.file.mkOutOfStoreSymlink
-  "${config.home.homeDirectory}/misc/dotfiles/ghostty";
-
-home.file.".config/ohmyposh".source = config.lib.file.mkOutOfStoreSymlink
-  "${config.home.homeDirectory}/misc/dotfiles/ohmyposh";
-
-home.file.".config/tmux".source = config.lib.file.mkOutOfStoreSymlink
-  "${config.home.homeDirectory}/misc/dotfiles/tmux";
-```
+| Binding | Action |
+|---------|--------|
+| `Mod+H/J/K/L` | Focus left/down/up/right |
+| `Mod+Shift+H/J/K/L` | Move window left/down/up/right |
+| `Mod+Q` | Close window |
+| `Mod+F` | Maximize column |
+| `Mod+Shift+F` | Fullscreen |
+| `Mod+C` | Center column |
+| `Mod+T` | Open terminal (ghostty) |
+| `Mod+D` | App launcher (fuzzel) |
+| `Mod+1-5` | Switch workspace |
+| `Mod+Shift+1-5` | Move to workspace |
+| `Print` | Screenshot |
+| `Mod+Shift+E` | Quit niri |
 
 ## Troubleshooting
 
@@ -171,7 +181,7 @@ Enable flakes: `echo "experimental-features = nix-command flakes" >> ~/.config/n
 You need to use `nix run nixpkgs#home-manager` for the first run.
 
 ### Package not found
-Check the exact name with `nix search nixpkgs <name>` or search on [search.nixos.org](https://search.nixos.org/packages).
+Check the exact name with `nix search nixpkgs <name>`.
 
 ### Changes not applying
 Try with `--impure` flag: `home-manager switch --flake . --impure`

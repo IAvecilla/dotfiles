@@ -1,5 +1,5 @@
 {
-  description = "macOS system configuration with nix-darwin and home-manager";
+  description = "Cross-platform system configuration with nix-darwin and home-manager";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -11,30 +11,28 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    paneru = {
-      url = "github:karinushka/paneru";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    niri-flake.url = "github:sodiboo/niri-flake";
+    nixgl.url = "github:nix-community/nixGL";
   };
 
-  outputs = { self, nixpkgs, nix-darwin, home-manager, paneru, ... }:
+  outputs = { self, nixpkgs, nix-darwin, home-manager, niri-flake, nixgl, ... }:
     let
-      # Change this to your system architecture
-      # "aarch64-darwin" for Apple Silicon (M1/M2/M3/M4)
-      # "x86_64-darwin" for Intel Macs
-      system = "aarch64-darwin";
+      # macOS configuration
+      darwinSystem = "aarch64-darwin";
+      darwinUsername = "ignacioavecilla";
+      darwinHostname = "Ignacios-MacBook-Pro-2";
+      darwinDotfilesDir = "/Users/${darwinUsername}/misc/dotfiles";
 
-      # Change this to your username
-      username = "ignacioavecilla";
-
-      # Change this to your hostname (run `hostname` to check)
-      hostname = "Ignacios-MacBook-Pro-2";
+      # Linux configuration
+      linuxSystem = "x86_64-linux";
+      linuxUsername = "nacho";
+      linuxDotfilesDir = "/home/${linuxUsername}/dotfiles";
     in {
-      # nix-darwin configuration
-      darwinConfigurations.${hostname} = nix-darwin.lib.darwinSystem {
-        inherit system;
+      # macOS: nix-darwin + home-manager
+      darwinConfigurations.${darwinHostname} = nix-darwin.lib.darwinSystem {
+        system = darwinSystem;
         specialArgs = {
-          inherit username;
+          username = darwinUsername;
         };
         modules = [
           ./darwin.nix
@@ -43,20 +41,36 @@
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = {
-              inherit username paneru;
+              username = darwinUsername;
+              dotfilesDir = darwinDotfilesDir;
             };
-            home-manager.users.${username} = import ./home.nix;
+            home-manager.users.${darwinUsername} = import ./home.nix;
           }
         ];
       };
 
-      # Keep standalone home-manager for compatibility
-      homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.${system};
+      # Linux: standalone home-manager with niri
+      homeConfigurations.${linuxUsername} = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.${linuxSystem};
+        modules = [
+          ./home.nix
+          ./linux.nix
+          niri-flake.homeModules.niri
+        ];
+        extraSpecialArgs = {
+          username = linuxUsername;
+          dotfilesDir = linuxDotfilesDir;
+          inherit nixgl;
+        };
+      };
+
+      # macOS standalone home-manager (for compatibility)
+      homeConfigurations.${darwinUsername} = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.${darwinSystem};
         modules = [ ./home.nix ];
         extraSpecialArgs = {
-          inherit username paneru;
-          dotfilesDir = self + "/..";
+          username = darwinUsername;
+          dotfilesDir = darwinDotfilesDir;
         };
       };
     };
