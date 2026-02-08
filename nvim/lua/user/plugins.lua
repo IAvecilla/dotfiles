@@ -46,8 +46,8 @@ return packer.startup(function(use)
     -- FloatTerm
     use 'voldikss/vim-floaterm'
     
-    -- TreeSitter 
-    use "nvim-treesitter/nvim-treesitter"
+    -- TreeSitter
+    use { "nvim-treesitter/nvim-treesitter", run = ":TSUpdate" }
     
     -- Tree (file explorer)
     use {"nvim-tree/nvim-tree.lua", requires = { "nvim-tree/nvim-web-devicons"}}
@@ -73,9 +73,6 @@ return packer.startup(function(use)
     -- Tmux config
     use "christoomey/vim-tmux-navigator"
 
-    -- Rust config
-    use "simrat39/rust-tools.nvim"
-    
     -- Markdown Preview
     use {'iamcco/markdown-preview.nvim',run = function() vim.fn['mkdp#util#install']() end, ft = {'markdown'}}
     
