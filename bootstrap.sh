@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fresh-Mac setup: Homebrew, Nix, this repo and the first nix-darwin switch.
+# Fresh-Mac setup: Nix, this repo and the first nix-darwin switch.
 # Safe to re-run; every step is skipped when already done.
 #
 #   bash <(curl -fsSL https://raw.githubusercontent.com/IAvecilla/dotfiles/main/bootstrap.sh)
@@ -25,14 +25,6 @@ sudo -v
 # keep sudo alive until the script exits
 while true; do sudo -n true; sleep 50; kill -0 "$$" || exit; done 2>/dev/null &
 
-step "Homebrew (also installs the Xcode Command Line Tools)"
-if [ ! -x /opt/homebrew/bin/brew ]; then
-  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-else
-  echo "already installed"
-fi
-eval "$(/opt/homebrew/bin/brew shellenv)"
-
 step "Nix"
 if [ ! -e /nix/var/nix/profiles/default/bin/nix ]; then
   sh <(curl -fsSL https://nixos.org/nix/install) --daemon --yes
@@ -41,6 +33,9 @@ else
 fi
 # shellcheck disable=SC1091
 . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+# git from nixpkgs: /usr/bin/git is only a stub until the Xcode Command Line
+# Tools are installed, and we don't need them for anything else
+git() { nix --extra-experimental-features 'nix-command flakes' run nixpkgs#git -- "$@"; }
 
 step "Dotfiles repo"
 if [ ! -d "$DIR/.git" ]; then

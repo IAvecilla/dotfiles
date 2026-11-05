@@ -13,7 +13,7 @@ Cross-platform system configuration managed declaratively with [nix-darwin](http
 | **Ghostty** | Declarative via `programs.ghostty` in `home.nix` |
 | **Oh My Posh** | Theme loaded from `ohmyposh/zen.toml` via `programs.oh-my-posh` |
 | **macOS defaults** | Dock, Finder, trackpad, keyboard settings in `darwin.nix` |
-| **Homebrew casks** | Managed via `homebrew.casks` in `darwin.nix` (Ghostty) |
+| **macOS apps** | Ghostty and Discord from nixpkgs (`environment.systemPackages` in `darwin.nix`), no Homebrew |
 
 ## Prerequisites
 
@@ -31,8 +31,8 @@ Prerequisites: user `ignacioavecilla`, enrolled in Kandji/Iru, 1Password install
 bash <(curl -fsSL https://raw.githubusercontent.com/IAvecilla/dotfiles/main/bootstrap.sh)
 ```
 
-`bootstrap.sh` installs Homebrew (+ Xcode Command Line Tools) and Nix, clones this repo to
-`~/misc/dotfiles` and runs the first nix-darwin switch (packages, casks, macOS defaults,
+`bootstrap.sh` installs Nix (no Homebrew, no Xcode Command Line Tools needed), clones this repo to
+`~/misc/dotfiles` and runs the first nix-darwin switch (packages, apps, macOS defaults,
 hostname, Claude Code, herdr, TPM). It is safe to re-run. Then:
 
 1. 1Password → Settings → Developer → **Use the SSH agent** (SSH + commit signing).
@@ -123,7 +123,7 @@ dotfiles/
 ├── home_manager/
 │   ├── flake.nix          # Entry point — inputs, system arch, username
 │   ├── flake.lock         # Pinned dependency versions
-│   ├── darwin.nix         # macOS system settings (dock, finder, keyboard, homebrew)
+│   ├── darwin.nix         # macOS system settings (dock, finder, keyboard, GUI apps)
 │   ├── linux.nix          # Linux settings (nixGL, Wayland tools)
 │   └── home.nix           # Shared user config (packages, git, zsh, ghostty, oh-my-posh)
 ├── nvim/                  # Neovim config (symlinked to ~/.config/nvim)
@@ -145,7 +145,7 @@ dotfiles/
 flake.nix
 ├── nix-darwin (darwin.nix)                    [macOS only]
 │   ├── macOS system defaults (dock, finder, trackpad, keyboard)
-│   ├── Homebrew casks (ghostty)
+│   ├── GUI apps (Ghostty, Discord) → /Applications/Nix Apps
 │   ├── Touch ID sudo
 │   └── System packages
 └── home-manager (home.nix)                    [shared]

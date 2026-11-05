@@ -11,8 +11,11 @@
   nixpkgs.config.allowUnfree = true;
 
   # System packages (available to all users)
+  # GUI apps land in /Applications/Nix Apps (indexed by Spotlight)
   environment.systemPackages = with pkgs; [
     vim
+    ghostty-bin
+    discord
   ];
 
   # macOS system defaults
@@ -63,17 +66,6 @@
 
   # Enable Touch ID for sudo
   security.pam.services.sudo_local.touchIdAuth = true;
-
-  # Homebrew (for macOS-only apps not in nixpkgs)
-  homebrew = {
-    enable = true;
-    casks = [
-      "ghostty"
-      "discord"
-      "raindropio"
-    ];
-    onActivation.cleanup = "zap";
-  };
 
   # Create /etc/zshrc that loads nix-darwin environment
   programs.zsh.enable = true;
