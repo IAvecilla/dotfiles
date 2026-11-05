@@ -69,6 +69,17 @@
   # Git configuration
   programs.git = {
     enable = true;
+    # Commit/tag signing with the SSH key stored in 1Password (public key only;
+    # the private key never leaves 1Password)
+    signing = {
+      format = "ssh";
+      key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII8FCbkSOE/3OM+XIzXcV2dFwd7JAB+5f+HET8PdgqRm";
+      signByDefault = true;
+      signer =
+        if pkgs.stdenv.hostPlatform.isDarwin
+        then "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+        else "/opt/1Password/op-ssh-sign";
+    };
     settings = {
       user = {
         name = "IAvecilla";
@@ -80,10 +91,7 @@
         dft = "!f() { GIT_EXTERNAL_DIFF=difft git \"$@\"; }; f";
       };
       init.defaultBranch = "main";
-      commit = {
-        gpgsign = true;
-        verbose = true;
-      };
+      commit.verbose = true;
       column.ui = "auto";
       branch.sort = "-committerdate";
       pager = {
