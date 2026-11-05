@@ -62,7 +62,7 @@ return packer.startup(function(use)
 
     -- Telescope
     use {
-     'nvim-telescope/telescope.nvim', tag = '0.1.1',
+     'nvim-telescope/telescope.nvim', tag = '0.1.8',
         requires = { {'nvim-lua/plenary.nvim'} }
     }
     
@@ -75,6 +75,27 @@ return packer.startup(function(use)
 
     -- Markdown Preview
     use {'iamcco/markdown-preview.nvim',run = function() vim.fn['mkdp#util#install']() end, ft = {'markdown'}}
+
+    -- Typst Preview (nvim 0.11 ya trae el filetype, no hace falta plugin de sintaxis)
+    use {'chomosuke/typst-preview.nvim', tag = 'v1.*', ft = {'typst'},
+         run = function() require('typst-preview').update() end,
+         config = function()
+           -- Si estas editando un capitulo suelto, compila igual el documento
+           -- completo: busca el main.typ mas cercano hacia arriba.
+           local function buscar_main(path)
+             local hallado = vim.fs.find('main.typ', {
+               path = vim.fs.dirname(path), upward = true, type = 'file',
+             })
+             return hallado[1]
+           end
+           require('typst-preview').setup {
+             get_main_file = function(path) return buscar_main(path) or path end,
+             get_root = function(path)
+               local main = buscar_main(path)
+               return main and vim.fs.dirname(main) or vim.fs.dirname(path)
+             end,
+           }
+         end}
     
     -- LSP completion source
     use "hrsh7th/cmp-nvim-lsp"

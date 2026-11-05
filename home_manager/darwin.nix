@@ -52,6 +52,13 @@
       Clicking = true;  # Tap to click
       TrackpadRightClick = true;
     };
+
+    # Custom preferences
+    CustomUserPreferences = {
+      "com.apple.dock" = {
+        mru-spaces = false;
+      };
+    };
   };
 
   # Enable Touch ID for sudo
@@ -62,6 +69,7 @@
     enable = true;
     casks = [
       "ghostty"
+      "discord"
     ];
     onActivation.cleanup = "zap";
   };

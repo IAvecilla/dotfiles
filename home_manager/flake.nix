@@ -11,11 +11,10 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    niri-flake.url = "github:sodiboo/niri-flake";
     nixgl.url = "github:nix-community/nixGL";
   };
 
-  outputs = { self, nixpkgs, nix-darwin, home-manager, niri-flake, nixgl, ... }:
+  outputs = { self, nixpkgs, nix-darwin, home-manager, nixgl, ... }:
     let
       # macOS configuration
       darwinSystem = "aarch64-darwin";
@@ -40,6 +39,7 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "backup";
             home-manager.extraSpecialArgs = {
               username = darwinUsername;
               dotfilesDir = darwinDotfilesDir;
@@ -55,7 +55,6 @@
         modules = [
           ./home.nix
           ./linux.nix
-          niri-flake.homeModules.niri
         ];
         extraSpecialArgs = {
           username = linuxUsername;

@@ -1,126 +1,205 @@
 # dotfiles
 
-Config files for the tools that I use, managed with [Nix](https://nixos.org/), [Home Manager](https://github.com/nix-community/home-manager), and [nix-darwin](https://github.com/LnL7/nix-darwin) (macOS).
+Cross-platform system configuration managed declaratively with [nix-darwin](https://github.com/LnL7/nix-darwin) (macOS) and [home-manager](https://github.com/nix-community/home-manager) (macOS + Linux).
 
-Supports **macOS** (aarch64-darwin) and **Linux** (x86_64-linux).
+## What's managed
 
-## What Home Manager installs and configures
+| Tool | How it's configured |
+|------|-------------------|
+| **Neovim** | Out-of-store symlink to `nvim/` — edit configs directly, no rebuild needed |
+| **tmux** | Out-of-store symlink to `tmux/tmux.conf` — edit directly, no rebuild needed |
+| **Git** | Declarative via `programs.git` in `home.nix` |
+| **Zsh** | Declarative via `programs.zsh` (oh-my-zsh, autosuggestions, syntax highlighting) |
+| **Ghostty** | Declarative via `programs.ghostty` in `home.nix` |
+| **Oh My Posh** | Theme loaded from `ohmyposh/zen.toml` via `programs.oh-my-posh` |
+| **macOS defaults** | Dock, Finder, trackpad, keyboard settings in `darwin.nix` |
+| **Homebrew casks** | Managed via `homebrew.casks` in `darwin.nix` (Ghostty) |
 
-### Packages (both platforms)
+## Prerequisites
 
-- `curl`, `wget`
-- `rustup` (Rust toolchain manager)
-- `docker`
+- [Nix](https://nixos.org/) with flakes enabled
+- **macOS**: Apple Silicon (aarch64-darwin)
+- **Linux**: x86_64-linux
 
-### Programs
+## Installation
 
-| Program | What it configures |
-|---|---|
-| **Neovim** | Default editor, `vi`/`vim` aliases. Config symlinked from `nvim/` |
-| **Git** | User, default branch, auto-setup remote |
-| **Zsh** | oh-my-zsh (git plugin), autocompletion, syntax highlighting |
-| **Oh My Posh** | Zen prompt theme (from `ohmyposh/zen.toml`) |
-| **Ghostty** | Font size, cursor, theme, keybinds. Binary installed separately per-platform |
+### 1. Install Nix
 
-### macOS-only (nix-darwin)
-
-- **Dock**: autohide, no recents, hot corners disabled
-- **Finder**: show extensions, show path bar
-- **Keyboard**: fast key repeat, press-and-hold disabled
-- **Trackpad**: tap to click, two-finger right-click
-- **Touch ID**: enabled for sudo
-- **Homebrew**: installs Ghostty cask
-
-### Linux-only
-
-- **Niri**: scrollable tiling Wayland compositor with vim-style keybindings
-- **Wayland tools**: fuzzel, swaybg, swaylock, mako, wl-clipboard, grim, slurp, xwayland-satellite
-- **nixGL**: wraps Ghostty and Niri for GPU compatibility on non-NixOS
-
-## Neovim setup
-
-Plugins are managed by **Packer** (auto-bootstraps on first launch).
-
-### Plugins
-
-- **nvim-treesitter** — syntax highlighting (lua, rust, toml parsers)
-- **nvim-tree** — file explorer
-- **telescope** — fuzzy finder
-- **nvim-cmp** — completion engine (LSP, buffer, path, snippets)
-- **mason** — LSP/tool installer
-- **nvim-autopairs** — auto-closing brackets
-- **vim-floaterm** — floating terminal
-- **vim-tmux-navigator** — seamless vim/tmux split navigation
-- **markdown-preview** — live markdown preview
-- **catppuccin** — colorscheme (default)
-
-### LSP
-
-- **rust-analyzer** configured via native `vim.lsp.config` (Neovim 0.11+)
-
-## Setup
-
-### Prerequisites
-
-- [Nix](https://nixos.org/download/) with flakes enabled
-
-### macOS
-
-```sh
-# First time
-make bootstrap-darwin
-
-# After that
-make darwin
+```bash
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
 ```
 
-### Linux
+Restart your shell after installation.
 
-```sh
-# First time
-make bootstrap-linux
+### 2. Clone this repo
 
-# After that
+```bash
+# macOS
+git clone https://github.com/IAvecilla/dotfiles.git ~/misc/dotfiles
+
+# Linux
+git clone https://github.com/IAvecilla/dotfiles.git ~/dotfiles
+```
+
+### 3. Build and apply
+
+**macOS (first time):**
+
+```bash
+make -C ~/misc/dotfiles bootstrap-darwin
+```
+
+**Linux (first time):**
+
+```bash
+make -C ~/dotfiles bootstrap-linux
+```
+
+This installs all packages, applies system settings, and symlinks configs.
+
+### 4. Install tmux plugin manager (TPM)
+
+```bash
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+```
+
+Then open tmux and press `prefix + I` (Ctrl-Space then I) to install plugins.
+
+## Daily usage
+
+### Apply changes after editing nix files
+
+```bash
+# macOS
+make darwin
+
+# Linux
 make linux
 ```
 
-### Post-install (manual steps)
+### Edit symlinked configs directly
 
-1. **Open Neovim** — Packer will auto-bootstrap and install plugins. Close and reopen Neovim, then run:
-   ```
-   :PackerSync
-   ```
+Neovim and tmux configs are symlinked out-of-store — changes take effect immediately without a rebuild:
 
-2. **Rust toolchain** — install rust-analyzer for LSP support:
-   ```sh
-   rustup component add rust-analyzer
-   rustup component add rust-src
-   ```
+```bash
+nvim ~/misc/dotfiles/nvim/init.lua       # neovim config
+nvim ~/misc/dotfiles/tmux/tmux.conf      # tmux config
+```
 
-3. **Tree-sitter CLI** — needed for building treesitter parsers:
-   ```sh
-   cargo install tree-sitter-cli
-   ```
+### Add a package
 
-4. **C compiler** — required by treesitter to compile parsers (`gcc` or `clang`)
+Edit `home.nix` and add to `home.packages`:
 
-5. **Linux: Niri session** — register Niri as a GDM login option (one-time):
-   ```sh
-   make setup-niri
-   ```
+```nix
+home.packages = with pkgs; [
+  curl
+  wget
+  htop  # new package
+];
+```
 
-## Make targets
+Then rebuild: `make darwin` or `make linux`
 
-| Command | Description |
-|---|---|
-| `make linux` | Apply home-manager config (Linux) |
-| `make darwin` | Apply nix-darwin + home-manager config (macOS) |
-| `make bootstrap-linux` | First-time setup (Linux) |
-| `make bootstrap-darwin` | First-time setup (macOS) |
-| `make update` | Update all flake inputs |
-| `make build-linux` | Dry-run build (Linux) |
-| `make build-darwin` | Dry-run build (macOS) |
-| `make rollback` | Revert to previous generation |
-| `make generations` | List past generations |
-| `make gc` | Garbage collect Nix store |
-| `make setup-niri` | Install Niri as GDM session (Linux, requires sudo) |
+### Search for packages
+
+```bash
+nix search nixpkgs <name>
+```
+
+### Update flake inputs
+
+```bash
+make update
+make darwin  # or: make linux
+```
+
+### Rollback
+
+```bash
+# macOS
+make rollback-darwin
+
+# Linux
+make rollback-linux
+
+# List past generations
+make generations
+```
+
+### Garbage collect
+
+```bash
+make gc
+```
+
+## Repository structure
+
+```
+dotfiles/
+├── Makefile               # Build/switch/rollback commands for both platforms
+├── home_manager/
+│   ├── flake.nix          # Entry point — inputs, system arch, username
+│   ├── flake.lock         # Pinned dependency versions
+│   ├── darwin.nix         # macOS system settings (dock, finder, keyboard, homebrew)
+│   ├── linux.nix          # Linux settings (nixGL, Wayland tools)
+│   └── home.nix           # Shared user config (packages, git, zsh, ghostty, oh-my-posh)
+├── nvim/                  # Neovim config (symlinked to ~/.config/nvim)
+│   ├── init.lua
+│   └── lua/user/
+│       ├── colorscheme.lua
+│       ├── keymaps.lua
+│       ├── options.lua
+│       └── plugins.lua
+├── tmux/
+│   └── tmux.conf          # tmux config (symlinked to ~/.config/tmux/tmux.conf)
+└── ohmyposh/
+    └── zen.toml           # Oh My Posh prompt theme
+```
+
+## Architecture
+
+```
+flake.nix
+├── nix-darwin (darwin.nix)                    [macOS only]
+│   ├── macOS system defaults (dock, finder, trackpad, keyboard)
+│   ├── Homebrew casks (ghostty)
+│   ├── Touch ID sudo
+│   └── System packages
+└── home-manager (home.nix)                    [shared]
+    ├── User packages (curl, wget, rustup)
+    ├── programs.neovim   ──symlink──▶  nvim/
+    ├── programs.git      ──generates──▶  ~/.config/git/config
+    ├── programs.zsh      ──generates──▶  ~/.zshrc
+    ├── programs.ghostty  ──generates──▶  ~/.config/ghostty/config
+    ├── programs.oh-my-posh (theme from ohmyposh/zen.toml)
+    ├── home.file         ──symlink──▶  tmux/tmux.conf
+    └── linux.nix                              [Linux only]
+        ├── Ghostty wrapped with nixGL
+        └── Wayland tools (fuzzel, mako, grim, slurp, etc.)
+```
+
+## Customization
+
+To adapt this for a different machine:
+
+1. In `flake.nix`, update:
+   - `darwinSystem` / `linuxSystem` — architecture
+   - `darwinUsername` / `linuxUsername` — your username
+   - `darwinHostname` — run `hostname` to check yours (macOS)
+   - `darwinDotfilesDir` / `linuxDotfilesDir` — repo location
+
+2. In `home.nix`, update:
+   - `userName` / `userEmail` in `programs.git`
+
+3. Rebuild: `make darwin` or `make linux`
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| `experimental Nix feature 'flakes' is disabled` | Run: `echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf` |
+| `file 'darwin' was not found` | Use `make bootstrap-darwin` for first install |
+| Package not found | Search with `nix search nixpkgs <name>` or check [search.nixos.org](https://search.nixos.org/packages) |
+| Changes not applying | Try `make darwin` or add `--impure` flag |
+| Symlink conflict | Remove the existing file first: `rm ~/.config/<path>`, then rebuild |
+| tmux plugins not loading | Install TPM: `git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm`, then press `prefix + I` |

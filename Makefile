@@ -5,7 +5,7 @@ linux:
 	cd $(FLAKE_DIR) && home-manager switch --flake .#nacho --impure
 
 darwin:
-	cd $(FLAKE_DIR) && darwin-rebuild switch --flake .
+	cd $(FLAKE_DIR) && sudo darwin-rebuild switch --flake .
 
 # First-time setup (before home-manager is in PATH)
 bootstrap-linux:
@@ -26,8 +26,11 @@ build-darwin:
 	cd $(FLAKE_DIR) && nix build .#darwinConfigurations.Ignacios-MacBook-Pro-2.system
 
 # Rollback to previous generation
-rollback:
+rollback-linux:
 	home-manager switch --rollback
+
+rollback-darwin:
+	cd $(FLAKE_DIR) && darwin-rebuild switch --rollback
 
 # List past generations
 generations:
@@ -37,10 +40,4 @@ generations:
 gc:
 	nix store gc
 
-# Setup niri as a GDM session option (requires sudo, run once)
-setup-niri:
-	@printf '[Desktop Entry]\nName=Niri\nComment=A scrollable-tiling Wayland compositor\nExec=$(HOME)/.nix-profile/bin/niri-session\nType=Application\nDesktopNames=niri\n' | sudo tee /usr/share/wayland-sessions/niri.desktop > /dev/null
-	@sudo sed -i 's/WaylandEnable=false/WaylandEnable=true/' /etc/gdm3/custom.conf
-	@echo "Niri session installed. Log out and select 'Niri' from the GDM login screen."
-
-.PHONY: linux darwin bootstrap-linux bootstrap-darwin update build-linux build-darwin rollback generations gc setup-niri
+.PHONY: linux darwin bootstrap-linux bootstrap-darwin update build-linux build-darwin rollback-linux rollback-darwin generations gc

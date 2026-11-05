@@ -6,13 +6,10 @@ require "user.colorscheme"
 vim.cmd(":set guicursor=")
 
 -- Treesitter Plugin Setup
-require('nvim-treesitter').install { 'lua', 'rust', 'toml' }
-
-vim.api.nvim_create_autocmd('FileType', {
-  callback = function()
-    pcall(vim.treesitter.start)
-  end,
-})
+require('nvim-treesitter.configs').setup {
+  ensure_installed = { 'lua', 'rust', 'toml', 'typst' },
+  highlight = { enable = true },
+}
 
 require("nvim-tree").setup {}
 
@@ -23,7 +20,7 @@ require("nvim-autopairs").setup {}
 require ("mason").setup({
     ui = {
         icons = {
-            package_insalled = "",
+            package_installed = "",
             package_pending = "",
             package_uninstalled = "",
         },
@@ -45,6 +42,45 @@ vim.lsp.config('rust_analyzer', {
   root_markers = { 'Cargo.toml', 'rust-project.json' },
 })
 vim.lsp.enable('rust_analyzer')
+
+-- Typst LSP (tinymist)
+vim.lsp.config('tinymist', {
+  cmd = { 'tinymist' },
+  filetypes = { 'typst' },
+  root_markers = { 'main.typ', '.git' },
+  settings = {
+    -- compila el documento completo aunque estes editando un capitulo suelto
+    tinymist = {
+      exportPdf = 'onSave',
+      outputPath = '$root/apunte',
+      formatterMode = 'typstyle',
+    },
+  },
+})
+vim.lsp.enable('tinymist')
+
+-- Preview en vivo: <leader>tp lo abre, sigue el cursor en los dos sentidos.
+-- El setup del plugin esta en plugins.lua (carga lazy, al abrir un .typ).
+-- <Leader>t ya es FloatermToggle, asi que el preview va en <Leader>v (view).
+vim.keymap.set('n', '<Leader>v', '<cmd>TypstPreviewToggle<CR>',
+  { desc = 'Typst: preview' })
+
+-- Al editar un capitulo suelto, tinymist compila ese archivo y sale sin estilo.
+-- :TypstPinMain (parado en main.typ) fija ese archivo como el documento a compilar.
+-- :TypstUnpin vuelve al comportamiento normal.
+vim.api.nvim_create_user_command('TypstPinMain', function()
+  vim.lsp.buf_request(0, 'workspace/executeCommand', {
+    command = 'tinymist.pinMain', arguments = { vim.api.nvim_buf_get_name(0) },
+  })
+  vim.notify('typst: fijado ' .. vim.fn.expand('%:t'))
+end, {})
+
+vim.api.nvim_create_user_command('TypstUnpin', function()
+  vim.lsp.buf_request(0, 'workspace/executeCommand', {
+    command = 'tinymist.pinMain', arguments = { vim.NIL },
+  })
+  vim.notify('typst: liberado')
+end, {})
 
 vim.api.nvim_create_autocmd('LspAttach', {
   callback = function(args)
@@ -81,11 +117,6 @@ vim.diagnostic.config({
         prefix = '',
     },
 })
-
-vim.cmd([[
-set signcolumn=yes
-autocmd CursorHold * lua vim.diagnostic.open_float(nil, { focusable = false })
-]])
 
 -- Completion Plugin Setup
 local cmp = require'cmp'

@@ -1,1 +1,4 @@
-nvim/plugin
+nvim/plugin/
+result
+result-*
+.DS_Store
