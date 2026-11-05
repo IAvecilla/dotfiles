@@ -70,6 +70,7 @@
     casks = [
       "ghostty"
       "discord"
+      "raindropio"
     ];
     onActivation.cleanup = "zap";
   };
