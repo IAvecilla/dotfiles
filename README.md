@@ -23,47 +23,30 @@ Cross-platform system configuration managed declaratively with [nix-darwin](http
 
 ## Installation
 
-### 1. Install Nix
+### macOS (fresh machine)
+
+Prerequisites: user `ignacioavecilla`, enrolled in Kandji/Iru, 1Password installed and signed in.
 
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+bash <(curl -fsSL https://raw.githubusercontent.com/IAvecilla/dotfiles/main/bootstrap.sh)
 ```
 
-Restart your shell after installation.
+`bootstrap.sh` installs Homebrew (+ Xcode Command Line Tools) and Nix, clones this repo to
+`~/misc/dotfiles` and runs the first nix-darwin switch (packages, casks, macOS defaults,
+hostname, Claude Code, herdr, TPM). It is safe to re-run. Then:
 
-### 2. Clone this repo
+1. 1Password → Settings → Developer → **Use the SSH agent** (SSH + commit signing).
+2. Restore private SSH hosts to `~/.ssh/config.local` (kept out of this public repo).
+3. System Settings → Privacy & Security → **App Management** → enable Ghostty.
+4. In tmux: `prefix + I` (Ctrl-Space then I) to install plugins.
+
+### Linux
 
 ```bash
-# macOS
-git clone https://github.com/IAvecilla/dotfiles.git ~/misc/dotfiles
-
-# Linux
+# install Nix first: https://nixos.org/download
 git clone https://github.com/IAvecilla/dotfiles.git ~/dotfiles
-```
-
-### 3. Build and apply
-
-**macOS (first time):**
-
-```bash
-make -C ~/misc/dotfiles bootstrap-darwin
-```
-
-**Linux (first time):**
-
-```bash
 make -C ~/dotfiles bootstrap-linux
 ```
-
-This installs all packages, applies system settings, and symlinks configs.
-
-### 4. Install tmux plugin manager (TPM)
-
-```bash
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-```
-
-Then open tmux and press `prefix + I` (Ctrl-Space then I) to install plugins.
 
 ## Daily usage
 

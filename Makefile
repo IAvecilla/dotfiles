@@ -12,7 +12,7 @@ bootstrap-linux:
 	cd $(FLAKE_DIR) && nix run nixpkgs#home-manager -- switch --flake .#nacho --impure
 
 bootstrap-darwin:
-	cd $(FLAKE_DIR) && nix run nix-darwin -- switch --flake .
+	./bootstrap.sh
 
 # Update all flake inputs
 update:

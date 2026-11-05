@@ -79,6 +79,8 @@
 
   # Set hostname
   networking.hostName = "Ignacios-MacBook-Pro-2";
+  networking.computerName = "Ignacios-MacBook-Pro-2";
+  networking.localHostName = "Ignacios-MacBook-Pro-2";
 
   # Used for backwards compatibility
   system.stateVersion = 6;

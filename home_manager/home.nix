@@ -31,14 +31,30 @@
   # (nixpkgs' claude-code lags far behind, and herdr isn't packaged). Only runs
   # when the binary is missing; failures (e.g. offline) don't abort the switch.
   home.activation.installLocalCLIs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    export PATH="${lib.makeBinPath [ pkgs.curl pkgs.bash pkgs.coreutils pkgs.gnutar pkgs.gzip ]}:/usr/bin:/bin:$PATH"
+    export PATH="${lib.makeBinPath [ pkgs.curl pkgs.bash pkgs.coreutils pkgs.gnutar pkgs.gzip pkgs.git ]}:/usr/bin:/bin:$PATH"
     if [ ! -x "$HOME/.local/bin/claude" ]; then
       run sh -c 'curl -fsSL https://claude.ai/install.sh | bash' || echo "warning: Claude Code install failed"
     fi
     if [ ! -x "$HOME/.local/bin/herdr" ]; then
       run sh -c 'curl -fsSL https://herdr.dev/install.sh | sh' || echo "warning: herdr install failed"
     fi
+    # tmux plugin manager (plugins themselves: prefix + I inside tmux)
+    if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
+      run git clone --depth 1 https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm" || echo "warning: TPM clone failed"
+    fi
   '';
+
+  # SSH: use the 1Password agent for every host. Private host entries (IPs,
+  # jump hosts) stay out of this public repo in ~/.ssh/config.local.
+  programs.ssh = {
+    enable = true;
+    enableDefaultConfig = false;
+    includes = [ "~/.ssh/config.local" ];
+    matchBlocks."*".identityAgent =
+      if pkgs.stdenv.hostPlatform.isDarwin
+      then "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\""
+      else "~/.1password/agent.sock";
+  };
 
   # Neovim configuration
   programs.neovim = {
