@@ -25,13 +25,13 @@ Cross-platform system configuration managed declaratively with [nix-darwin](http
 
 ### macOS (fresh machine)
 
-Prerequisites: user `ignacioavecilla`, enrolled in Kandji/Iru, 1Password installed and signed in.
+Prerequisites: user `ignacioavecilla`, enrolled in Kandji/Iru, 1Password and Nix installed from Iru Self Service.
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/IAvecilla/dotfiles/main/bootstrap.sh)
 ```
 
-`bootstrap.sh` installs Nix (no Homebrew, no Xcode Command Line Tools needed), clones this repo to
+Install **Nix from Iru Self Service** first. `bootstrap.sh` (no Homebrew or Xcode CLT needed) clones this repo to
 `~/misc/dotfiles` and runs the first nix-darwin switch (packages, apps, macOS defaults,
 hostname, Claude Code, herdr, TPM). It is safe to re-run. Then:
 

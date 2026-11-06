@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fresh-Mac setup: Nix, this repo and the first nix-darwin switch.
+# Fresh-Mac setup (Nix comes from Iru Self Service): this repo and the first nix-darwin switch.
 # Safe to re-run; every step is skipped when already done.
 #
 #   bash <(curl -fsSL https://raw.githubusercontent.com/IAvecilla/dotfiles/main/bootstrap.sh)
@@ -25,12 +25,16 @@ sudo -v
 # keep sudo alive until the script exits
 while true; do sudo -n true; sleep 50; kill -0 "$$" || exit; done 2>/dev/null &
 
-step "Nix"
+step "Nix (installed from Iru Self Service)"
 if [ ! -e /nix/var/nix/profiles/default/bin/nix ]; then
-  sh <(curl -fsSL https://nixos.org/nix/install) --daemon --yes
-else
-  echo "already installed"
+  echo "Nix not found. Install it from Iru Self Service, then re-run this script."
+  exit 1
 fi
+if [ -e /usr/local/bin/determinate-nixd ]; then
+  echo "Determinate Nix detected: set 'nix.enable = false;' in home_manager/darwin.nix"
+  echo "(and drop nix.settings, Determinate manages Nix itself) before the first switch."
+fi
+echo "found $(/nix/var/nix/profiles/default/bin/nix --version)"
 # shellcheck disable=SC1091
 . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 # git from nixpkgs: /usr/bin/git is only a stub until the Xcode Command Line
